@@ -290,7 +290,7 @@ button:disabled {
   font-weight: 700;
 }
 .tree-ascii .leaf {
-  color: var(--accent);
+  color: var(--accent-2);
   font-weight: 700;
 }
 .tree-ascii .branch {
