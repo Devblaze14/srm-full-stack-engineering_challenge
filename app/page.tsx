@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type {
   BfhlPayload as BfhlResponse,
   EdgeTree as TreeNode,
@@ -42,21 +42,44 @@ function parseInput(raw: string): string[] {
     .filter((s) => s.length > 0);
 }
 
-function TreeView({ node }: { node: TreeNode }) {
-  const entries = Object.entries(node);
-  if (entries.length === 0) return null;
+type AsciiLine = { prefix: string; label: string; kind: "root" | "leaf" | "branch" };
+
+function buildAsciiLines(
+  label: string,
+  children: TreeNode,
+  prefix = "",
+  isRoot = true,
+  isLast = true
+): AsciiLine[] {
+  const entries = Object.entries(children);
+  const isLeaf = entries.length === 0;
+  const connector = isRoot ? "" : isLast ? "└── " : "├── ";
+  const kind: AsciiLine["kind"] = isRoot ? "root" : isLeaf ? "leaf" : "branch";
+
+  const lines: AsciiLine[] = [{ prefix: prefix + connector, label, kind }];
+  const childPrefix = prefix + (isRoot ? "" : isLast ? "    " : "│   ");
+
+  entries.forEach(([childLabel, grandchildren], idx) => {
+    const last = idx === entries.length - 1;
+    lines.push(...buildAsciiLines(childLabel, grandchildren, childPrefix, false, last));
+  });
+
+  return lines;
+}
+
+function AsciiTree({ root, tree }: { root: string; tree: TreeNode }) {
+  const rootChildren = tree[root] ?? {};
+  const lines = buildAsciiLines(root, rootChildren);
   return (
-    <ul>
-      {entries.map(([label, children]) => {
-        const isLeaf = Object.keys(children).length === 0;
-        return (
-          <li key={label}>
-            <span className={isLeaf ? "leaf" : ""}>{label}</span>
-            <TreeView node={children} />
-          </li>
-        );
-      })}
-    </ul>
+    <pre className="tree-ascii" data-root={root}>
+      {lines.map((line, i) => (
+        <Fragment key={i}>
+          <span className="branch">{line.prefix}</span>
+          <span className={line.kind}>{line.label}</span>
+          {i < lines.length - 1 && "\n"}
+        </Fragment>
+      ))}
+    </pre>
   );
 }
 
@@ -175,14 +198,7 @@ export default function Home() {
                     {h.has_cycle ? (
                       <p className="empty">Cyclic group — no tree to render.</p>
                     ) : (
-                      <ul className="tree">
-                        {Object.entries(h.tree).map(([label, children]) => (
-                          <li key={label}>
-                            <span>{label}</span>
-                            <TreeView node={children} />
-                          </li>
-                        ))}
-                      </ul>
+                      <AsciiTree root={h.root} tree={h.tree} />
                     )}
                   </div>
                 ))}

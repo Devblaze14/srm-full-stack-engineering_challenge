@@ -261,31 +261,40 @@ button:disabled {
   border-color: var(--border);
 }
 
-.tree {
+.tree-ascii {
+  background: #0a0a0a;
+  color: var(--accent-2);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 12px 14px;
+  margin: 0;
   font-family: var(--mono);
   font-size: 13px;
-  color: var(--text);
-  padding-left: 0;
-  margin: 0;
-  list-style: none;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+  position: relative;
 }
-.tree ul {
-  list-style: none;
-  margin: 0;
-  padding-left: 18px;
-  border-left: 1px dashed var(--border);
-  margin-left: 8px;
+.tree-ascii::before {
+  content: "$ tree " attr(data-root);
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #333;
 }
-.tree li {
-  padding: 2px 0;
+.tree-ascii .root {
+  color: var(--yellow);
+  font-weight: 700;
 }
-.tree li::before {
-  content: "> ";
-  color: var(--accent);
-}
-.tree .leaf {
+.tree-ascii .leaf {
   color: var(--accent);
   font-weight: 700;
+}
+.tree-ascii .branch {
+  color: #fff;
 }
 
 .identity {
