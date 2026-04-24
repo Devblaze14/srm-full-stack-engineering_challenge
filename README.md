@@ -1,4 +1,4 @@
-# BFHL — SRM Full Stack Challenge (Round 1)
+# BFHL — SRM Full Stack Challenge
 
 A Next.js app that exposes `POST /bfhl`, parses arrays of edge strings
 (`"A->B"`) into hierarchical trees, detects cycles, and returns structured
