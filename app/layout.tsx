@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BFHL — Hierarchy Analyzer",
-  description: "Parse edge lists, build trees, detect cycles.",
+  title: "Hierarchy Analyzer · /bfhl",
+  description:
+    "Submit edge lists like A->B; get back validated trees, detected cycles, and a summary.",
 };
 
 export default function RootLayout({

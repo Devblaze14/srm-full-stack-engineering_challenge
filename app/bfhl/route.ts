@@ -1,17 +1,11 @@
-import { NextResponse } from "next/server";
-import { processBfhl } from "@/lib/bfhl";
+import { analyzeEdges } from "@/lib/bfhl";
+import { withCors } from "@/lib/cors";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders });
+export function OPTIONS() {
+  return new Response(null, withCors({ status: 204 }));
 }
 
 export async function POST(req: Request) {
@@ -19,25 +13,20 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON body" },
-      { status: 400, headers: corsHeaders }
-    );
+    return Response.json({ error: "Invalid JSON body" }, withCors({ status: 400 }));
   }
+
   const data = (body as { data?: unknown })?.data;
   if (!Array.isArray(data)) {
-    return NextResponse.json(
-      { error: "'data' must be an array" },
-      { status: 400, headers: corsHeaders }
-    );
+    return Response.json({ error: "'data' must be an array" }, withCors({ status: 400 }));
   }
-  const result = processBfhl(data);
-  return NextResponse.json(result, { headers: corsHeaders });
+
+  return Response.json(analyzeEdges(data), withCors());
 }
 
-export async function GET() {
-  return NextResponse.json(
-    { message: "POST to /bfhl with { data: string[] }" },
-    { headers: corsHeaders }
+export function GET() {
+  return Response.json(
+    { message: "POST /bfhl with { data: string[] }" },
+    withCors()
   );
 }

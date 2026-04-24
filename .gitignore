@@ -13,8 +13,13 @@ build/
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
 *.log
 *.pem
+*.tmp
+*.temp
+*.bak
 
 # debug logs
 npm-debug.log*
@@ -39,6 +44,12 @@ next-env.d.ts
 # tooling / cache
 .eslintcache
 .swc/
+.turbo/
+*.tgz
+
+# editors / IDE
+.vscode/
+.idea/
 
 # AI Assistants / Editor Tooling (preventing AI footprints)
 .claude/

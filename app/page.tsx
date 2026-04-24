@@ -1,46 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import type {
+  BfhlPayload as BfhlResponse,
+  EdgeTree as TreeNode,
+  HierarchyItem as Hierarchy,
+} from "@/lib/types";
 
-type TreeNode = { [k: string]: TreeNode };
-
-interface Hierarchy {
-  root: string;
-  tree: TreeNode;
-  depth?: number;
-  has_cycle?: true;
-}
-
-interface BfhlResponse {
-  user_id: string;
-  email_id: string;
-  college_roll_number: string;
-  hierarchies: Hierarchy[];
-  invalid_entries: string[];
-  duplicate_edges: string[];
-  summary: {
-    total_trees: number;
-    total_cycles: number;
-    largest_tree_root: string;
-  };
-}
-
-const EXAMPLE = `A->B
-A->C
-B->D
-C->E
-E->F
-X->Y
-Y->Z
-Z->X
-P->Q
-Q->R
-G->H
-G->H
-G->I
-hello
-1->2
-A->`;
+const EXAMPLE = [
+  "G->H",
+  "G->H",
+  "G->I",
+  "X->Y",
+  "Y->Z",
+  "Z->X",
+  "P->Q",
+  "Q->R",
+  "A->B",
+  "A->C",
+  "B->D",
+  "C->E",
+  "E->F",
+  "hello",
+  "1->2",
+  "A->",
+].join("\n");
 
 function parseInput(raw: string): string[] {
   const t = raw.trim();
@@ -109,7 +93,7 @@ export default function Home() {
   return (
     <main className="container">
       <p className="subtitle">&lt;BFHL / HIERARCHY ANALYZER&gt;</p>
-      <h1>The Human &lt;Algorithm&gt;</h1>
+      <h1>Hierarchy Signal Processor</h1>
       <p className="subtitle">
         Paste edges like <code>A-&gt;B</code> (one per line, comma-separated, or a JSON array).
         Submits to <code>/bfhl</code>.

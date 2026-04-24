@@ -1,65 +1,87 @@
-# BFHL — SRM Full Stack Challenge
+# Hierarchy Signal Processor
 
-A Next.js app that exposes `POST /bfhl`, parses arrays of edge strings
-(`"A->B"`) into hierarchical trees, detects cycles, and returns structured
-insights. Ships with a single-page UI for interactive use.
+A Next.js app built for the SRM Full Stack Engineering Challenge. It exposes a single `POST /bfhl` endpoint that takes a raw list of edge strings, figures out what's valid, builds the trees, detects cycles, and hands back a clean structured response — all in one shot.
+
+There's also a frontend so you can poke at it without touching a terminal.
+
+---
 
 ## API
 
 **`POST /bfhl`** — `Content-Type: application/json`
 
-Request:
-
 ```json
 { "data": ["A->B", "A->C", "B->D"] }
 ```
 
-Response fields: `user_id`, `email_id`, `college_roll_number`,
-`hierarchies[]`, `invalid_entries[]`, `duplicate_edges[]`, `summary`.
+Response includes:
 
-CORS is enabled for all origins. Preflight `OPTIONS` returns 204.
+| Field | What it is |
+|---|---|
+| `user_id` | `fullname_ddmmyyyy` format |
+| `email_id` | College email |
+| `college_roll_number` | Roll number |
+| `hierarchies` | Array of tree or cycle objects |
+| `invalid_entries` | Strings that didn't match the valid format |
+| `duplicate_edges` | Repeated edges (first occurrence is kept, rest go here) |
+| `summary` | `total_trees`, `total_cycles`, `largest_tree_root` |
 
-## Local development
+CORS is open to all origins. Preflight `OPTIONS` returns 204.
+
+---
+
+## Running locally
 
 ```bash
 npm install
-npm test           # unit tests (vitest)
-npm run dev        # dev server at http://localhost:3000
-npm run build && npm start   # production build
+npm test          # unit tests via vitest
+npm run dev       # http://localhost:3000
+npm run build && npm start
 ```
 
-Smoke test:
+Quick smoke test (Windows — use `curl.exe`):
 
 ```bash
-curl -X POST http://localhost:3000/bfhl \
-  -H 'Content-Type: application/json' \
-  -d '{"data":["A->B","A->C","B->D","C->E","E->F","X->Y","Y->Z","Z->X","P->Q","Q->R","G->H","G->H","G->I","hello","1->2","A->"]}'
+curl.exe -X POST http://localhost:3000/bfhl \
+  -H "Content-Type: application/json" \
+  --data-binary "@payload.json"
 ```
 
-## Project layout
+---
 
-- `app/bfhl/route.ts` — route handler (POST + OPTIONS, CORS).
-- `app/page.tsx` — frontend (textarea, submit, tree view).
-- `lib/bfhl.ts` — pure algorithm: validate → dedupe → first-parent-wins →
-  group (union-find) → classify (tree or pure cycle) → summarize.
-- `lib/identity.ts` — `user_id`, `email_id`, `college_roll_number`.
-- `lib/__tests__/bfhl.test.ts` — spec example + edge-case tests.
+## How it works
 
-## Processing rules (summary)
+The algorithm runs in a single pass over the input. As each entry comes in, it's trimmed and checked — each side of `->` must be exactly one uppercase letter, no self-loops. Invalid entries are collected immediately. Duplicates are flagged once (no matter how many times they repeat) and the first occurrence is kept. The first-parent-wins rule is enforced here too: if a child node already has a recorded parent, any later edge pointing to that same child is silently dropped.
 
-1. Trim then match `^[A-Z]->[A-Z]$`; self-loops are invalid.
-2. Duplicate edges: first occurrence kept; later ones go to
-   `duplicate_edges` once each.
-3. Multi-parent: first parent edge wins; later parent edges for the same
-   child are silently discarded.
-4. A group with a parentless node renders as a tree; a pure cycle renders
-   with `has_cycle: true`, `tree: {}`, and the lexicographically smallest
-   node as root.
-5. `depth` = node count on the longest root-to-leaf path.
-6. `largest_tree_root` ties broken by lexicographically smallest root.
+Kept edges populate an undirected adjacency map. Once the pass is done, iterative BFS discovers connected components in first-encounter order. For each component:
 
-## Deploy (Vercel)
+- If every node has a parent recorded → it's a pure cycle. Root is the lexicographically smallest node, `tree` is `{}`, `has_cycle: true`, no `depth`.
+- Otherwise → the one parentless node is the root. A single post-order DFS walk builds the nested `tree` object and computes `depth` at the same time.
 
-1. Push this repo to GitHub (public).
-2. Import the repo in Vercel — framework auto-detects as Next.js.
-3. Submit the Vercel URL (evaluator appends `/bfhl`) and the repo URL.
+The summary tallies up non-cyclic trees, cycles, and picks the deepest tree root (lex-smallest on ties).
+
+---
+
+## Project structure
+
+```
+app/
+  bfhl/route.ts     → POST handler + OPTIONS preflight
+  page.tsx          → single-page frontend
+  globals.css       → styles
+lib/
+  bfhl.ts           → core algorithm (analyzeEdges)
+  types.ts          → shared TypeScript types
+  cors.ts           → withCors helper
+  identity.ts       → user_id, email_id, college_roll_number
+  __tests__/
+    bfhl.test.ts    → spec example + edge case coverage
+```
+
+---
+
+## Deploying to Vercel
+
+1. Push the repo to GitHub (must be public).
+2. Import it in Vercel — Next.js is auto-detected.
+3. Submit your Vercel URL (evaluator hits `<your-url>/bfhl`) and the repo link.

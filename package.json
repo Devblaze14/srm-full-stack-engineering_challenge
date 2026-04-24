@@ -1,7 +1,8 @@
 {
-  "name": "srm-bfhl",
+  "name": "bfhl-hierarchy-analyzer",
   "version": "1.0.0",
   "private": true,
+  "description": "BFHL edge-list analyzer: validates, groups by BFS, detects cycles, summarizes.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
