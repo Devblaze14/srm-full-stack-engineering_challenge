@@ -78,10 +78,4 @@ lib/
     bfhl.test.ts    → spec example + edge case coverage
 ```
 
----
 
-## Deploying to Vercel
-
-1. Push the repo to GitHub (must be public).
-2. Import it in Vercel — Next.js is auto-detected.
-3. Submit your Vercel URL (evaluator hits `<your-url>/bfhl`) and the repo link.
